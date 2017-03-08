@@ -3,14 +3,15 @@
 
 import argparse
 import sqlite3
-import collections
 import random
 import string
 import os
+import sys
 import re
 import time
 import shutil
 import json
+import zipfile
 from PIL import Image
 from hashlib import sha1
 
@@ -22,6 +23,7 @@ EPOCH = int(time.time())
 reMedia = re.compile("(?i)<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>")
 
 dedupe = set()
+
 
 def main(genki_dir):
     cards_iterator = load_genki_vocab(genki_dir)
@@ -42,8 +44,15 @@ def create_base_apkg(cards, genki_dir):
     anki_base = open(os.path.join(assets_dir, 'anki.sql')).read()
 
     apkg_path = 'genki_apkg'
+    if os.path.isfile('apkg_path'):
+        print('%s exists and is not a directory')
+        sys.exit(1)
     if not os.path.exists(apkg_path):
         os.mkdir(apkg_path)
+    if len(os.listdir(apkg_path)) > 0:
+        print('%s exists but is not empty')
+        sys.exit(1)
+
     connection = sqlite3.connect(
         os.path.join(apkg_path, 'collection.anki2')
     )
@@ -58,7 +67,13 @@ def create_base_apkg(cards, genki_dir):
 
     connection.close()
     media_file = open(os.path.join(apkg_path, 'media'), 'w')
-    json.dump({ str(n): media[n] for n in range(len(media)) }, media_file, sort_keys=True)
+    json.dump(
+        {str(n): media[n] for n in range(len(media))},
+        media_file, sort_keys=True
+    )
+    media_file.close()
+    create_zip(apkg_path, 'genki.apkg')
+    shutil.rmtree(apkg_path)
 
 
 def create_card(card, anki_conn, genki_dir, apkg_path, media):
@@ -72,15 +87,22 @@ def create_card(card, anki_conn, genki_dir, apkg_path, media):
     illustration_tag = ""
     if illustration_name is not None:
         illustration_tag = '<img src="%s" />' % illustration_name
-    tags = ' %s %s ' % (card['LESSON'], card['LESSON_NAME'])
+    tags = ' genki-%s ' %  card['LESSON']
     if card['PARTS']:
-        tags += ' %s' % card['PARTS'].replace(' ','-')
-    flds = '%s%s<img src="%s" />%s[sound:%s]' % (english, japanese, kanji_image_name, illustration_tag, kanji_voice_name)
+        tags += '%s ' % card['PARTS'].replace(' ', '-')
+    flds = (
+        '%s%s<img src="%s" />%s[sound:%s]' %
+        (english, japanese, kanji_image_name,
+         illustration_tag, kanji_voice_name)
+    )
     if flds in dedupe:
+        print('DUPE: %s' % english)
         return
     dedupe.add(flds)
+    print(english)
 
-    copy_media(genki_dir, apkg_path, media, kanji_image_name, kanji_voice_name, illustration_name)
+    copy_media(genki_dir, apkg_path, media, kanji_image_name,
+               kanji_voice_name, illustration_name)
 
     anki_conn.execute(
         """INSERT INTO "notes" VALUES(:tsid,:guid,:mid,:ts,-1,:tags,:flds,:front,:csum,0,'');""",
@@ -143,6 +165,17 @@ def copy_media(genki_dir, output_dir, media, kanji, audio, illus):
             os.path.join(output_dir, str(len(media) - 1))
         )
 
+
+def create_zip(indir, outfile):
+    zf = zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED)
+    for f in os.listdir(indir):
+        zf.write(os.path.join(indir, f), arcname=f)
+    zf.close()
+
+
+#######################################################
+#  Helper functions copied from the Anki source code  #
+#######################################################
 
 def intTime(scale=1):
     "The time in integer seconds. Pass scale=1000 to get milliseconds."
