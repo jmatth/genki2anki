@@ -25,9 +25,9 @@ reMedia = re.compile("(?i)<img[^>]+src=[\"']?([^\"'>]+)[\"']?[^>]*>")
 dedupe = set()
 
 
-def main(genki_dir):
+def main(genki_dir, output_path):
     cards_iterator = load_genki_vocab(genki_dir)
-    create_base_apkg(cards_iterator, genki_dir)
+    create_base_apkg(cards_iterator, genki_dir, output_path)
 
 
 def load_genki_vocab(genki_dir):
@@ -39,12 +39,12 @@ def load_genki_vocab(genki_dir):
     return connection.execute('select * from WordsTBL2;')
 
 
-def create_base_apkg(cards, genki_dir):
+def create_base_apkg(cards, genki_dir, output_path):
     assets_dir = os.path.dirname(os.path.realpath(__file__))
     anki_base = open(os.path.join(assets_dir, 'anki.sql')).read()
 
     apkg_path = 'genki_apkg'
-    if os.path.isfile('apkg_path'):
+    if os.path.isfile(apkg_path):
         print('%s exists and is not a directory')
         sys.exit(1)
     if not os.path.exists(apkg_path):
@@ -72,7 +72,7 @@ def create_base_apkg(cards, genki_dir):
         media_file, sort_keys=True
     )
     media_file.close()
-    create_zip(apkg_path, 'genki.apkg')
+    create_zip(apkg_path, output_path)
     shutil.rmtree(apkg_path)
 
 
@@ -263,6 +263,7 @@ def checksum(data):
         data = data.encode("utf-8")
     return sha1(data).hexdigest()
 
+
 def fieldChecksum(data):
     # 32 bit unsigned number from first 8 digits of sha1 hash
     return int(checksum(stripHTMLMedia(data).encode("utf-8"))[:8], 16)
@@ -274,5 +275,10 @@ if __name__ == '__main__':
         'genki_dir',
         help='Path to the extracted GENKI Vocab apk contents.'
     )
+    parser.add_argument(
+        'output_file',
+        help=('Desired path to output apkg file.'
+              ' THIS WILL BE OVERWRITTEN IF IT EXISTS!')
+    )
     args = parser.parse_args()
-    main(args.genki_dir)
+    main(args.genki_dir, args.output_file)
