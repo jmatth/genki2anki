@@ -4,11 +4,11 @@
 import argparse
 import sqlite3
 import os
-import sys
 import re
 import time
 import shutil
 import json
+import tempfile
 import zipfile
 import ankiutils
 from PIL import Image
@@ -41,15 +41,8 @@ def create_base_apkg(cards, genki_dir, output_path):
     assets_dir = os.path.dirname(os.path.realpath(__file__))
     anki_base = open(os.path.join(assets_dir, 'anki.sql')).read()
 
-    apkg_path = 'genki_apkg'
-    if os.path.isfile(apkg_path):
-        print('%s exists and is not a directory' % apkg_path)
-        sys.exit(1)
-    if not os.path.exists(apkg_path):
-        os.mkdir(apkg_path)
-    if len(os.listdir(apkg_path)) > 0:
-        print('%s exists but is not empty' % apkg_path)
-        sys.exit(1)
+    tmp_dir = tempfile.TemporaryDirectory(prefix='genki2anki-')
+    apkg_path = tmp_dir.name
 
     connection = sqlite3.connect(
         os.path.join(apkg_path, 'collection.anki2')
@@ -71,7 +64,7 @@ def create_base_apkg(cards, genki_dir, output_path):
     )
     media_file.close()
     create_zip(apkg_path, output_path)
-    shutil.rmtree(apkg_path)
+    tmp_dir.cleanup()
 
 
 def create_card(card, anki_conn, genki_dir, apkg_path, media):
@@ -103,7 +96,10 @@ def create_card(card, anki_conn, genki_dir, apkg_path, media):
                kanji_voice_name, illustration_name)
 
     anki_conn.execute(
-        """INSERT INTO "notes" VALUES(:tsid,:guid,:mid,:ts,-1,:tags,:flds,:front,:csum,0,'');""",
+        """\
+            INSERT INTO "notes"
+            VALUES(:tsid,:guid,:mid,:ts,-1,:tags,:flds,:front,:csum,0,'');
+        """,
         {
             'tsid': ts_id,
             'guid': guid,
@@ -118,7 +114,10 @@ def create_card(card, anki_conn, genki_dir, apkg_path, media):
 
     cards_tsid = ankiutils.timestampID(anki_conn, 'cards')
     anki_conn.execute(
-        """INSERT INTO "cards" VALUES(:tsid,:nid,:did,0,:mod,0,0,0,76,0,0,0,0,0,0,0,0,'');""",
+        """\
+            INSERT INTO "cards"
+            VALUES(:tsid,:nid,:did,0,:mod,0,0,0,76,0,0,0,0,0,0,0,0,'');
+        """,
         {
             'tsid': cards_tsid,
             'nid': ts_id,
@@ -127,7 +126,10 @@ def create_card(card, anki_conn, genki_dir, apkg_path, media):
         }
     )
     anki_conn.execute(
-        """INSERT INTO "cards" VALUES(:tsid,:nid,:did,1,:mod,0,0,0,76,0,0,0,0,0,0,0,0,'');""",
+        """\
+            INSERT INTO "cards"
+            VALUES(:tsid,:nid,:did,1,:mod,0,0,0,76,0,0,0,0,0,0,0,0,'');
+        """,
         {
             'tsid': cards_tsid + 1,
             'nid': ts_id,
