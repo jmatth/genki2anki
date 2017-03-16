@@ -58,10 +58,13 @@ HTML files for easier customization, but probably not.
 ## Known Issues
 * Some cards will be created where the "kanji" image is just a duplicate of the
   kana reading. This is a result of how Genki structured the data within their
-  app and can't be helped. After the first couple chapters these seem to become
-  the exception rather than the rule, so if it really bothers you it shouldn't
-  be too much work to delete the images from such notes by editing them during
-  review.
+  app and can't be helped. The simplest solution is to just edit such cards as
+  they come up during your study sessions and delete the image from the kanji
+  field. Then once you're done click `Tools -> Empty Cards...` to have Anki
+  remove the now empty kanji cards. Since most cards don't have kanji until
+  lesson 3, it might also be preferable to go through notes from the first two
+  lessons and modify each card to remove the kanji before you start using the
+  deck.
 * Some of the readings have hints in parenthesis that give away the English
   meaning (for example "あの (um . . .)"). Your best option is just do edit the
   cards as they come up during study sessions.
