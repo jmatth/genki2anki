@@ -24,20 +24,22 @@ It will also tag each card with its Genki lesson (chapter).
 
 
 ## Step By Step Instructions
-1. [Install adb](https://developer.android.com/studio/index.html#downloads) on
+Prerequisites: python3 with pip
+1. Clone this repo and install the dependencies with `pip3 install -r requirements.txt`
+2. [Install adb](https://developer.android.com/studio/index.html#downloads) on
    your computer and
    [enable USB debugging](https://www.howtogeek.com/129728/how-to-access-the-developer-options-menu-and-enable-usb-debugging-on-android-4.2/)
    on your Android device.
-2. Purchase the [Genki Vocab App](http://example.com) from the Play Store and
+3. Purchase the [Genki Vocab App](http://example.com) from the Play Store and
    install it on your device.
-3. Determine where the apk is stored on your device with the command `adb shell
+4. Determine where the apk is stored on your device with the command `adb shell
    pm path jp.co.japantimes.genkivocab`. This should produce output that looks
    like `package:<PATH_TO_APK>`. Copy everything after the colon.
-4. Copy the apk to your computer with the command `adb pull <PATH_TO_APK>`,
+5. Copy the apk to your computer with the command `adb pull <PATH_TO_APK>`,
    where `<PATH_TO_APK>` is the path from the previous step.
-5. Unzip the apk. Depending on how you do this you might need to change the
+6. Unzip the apk. Depending on how you do this you might need to change the
    extension from `.apk` to `.zip`.
-6. Run this program with the path to the extracted apk contents as the first
+7. Run this program with the path to the extracted apk contents as the first
    argument and the desired output file as the second: `./genki2anki.py
    /path/to/genki ./anki.apkg`.
 
