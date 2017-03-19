@@ -31,7 +31,7 @@ class Apkg(object):
 
     def _initialize_db(self):
         assets_dir = os.path.dirname(os.path.realpath(__file__))
-        anki_base = open(os.path.join(assets_dir, 'nanki.sql')).read()
+        anki_base = open(os.path.join(assets_dir, 'anki.sql')).read()
         self._connection.executescript(anki_base)
         self._connection.commit()
 
