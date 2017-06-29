@@ -38,10 +38,15 @@ def create_card(card, anki, genki_dir):
     sound_template = '[sound:%s]'
     english = card['ENG_WORD']
     japanese = card['JPN_WORD']
+    en_sentence = card['ENG_TEXT']
     kanji_image_name = card['JPN_WORD_IMAGE']
     kanji_image_tag = img_template % kanji_image_name
     kanji_voice_name = card['JPN_WORD_VOICE'] + '.mp3'
     kanji_voice_tag = sound_template % kanji_voice_name
+    jp_sentence_image_name = card['JPN_TEXT']
+    jp_sentence_tag = img_template % jp_sentence_image_name
+    jp_sentence_voice_name = card['JPN_TEXT_VOICE'] + '.mp3'
+    jp_sentence_voice_tag = sound_template % jp_sentence_voice_name
     illustration_name = card['ILLUST']
     illustration_tag = ""
     if illustration_name is not None:
@@ -55,17 +60,23 @@ def create_card(card, anki, genki_dir):
         kanji_image_tag,
         illustration_tag,
         kanji_voice_tag,
+        jp_sentence_tag,
+        en_sentence,
+        jp_sentence_voice_tag
     ]
 
     anki.add_note(flds, tags)
 
     copy_media(genki_dir, anki, kanji_image_name,
-               kanji_voice_name, illustration_name)
+               kanji_voice_name, illustration_name,
+               jp_sentence_image_name, jp_sentence_voice_name)
 
 
-def copy_media(genki_dir, anki, kanji, audio, illus):
+def copy_media(genki_dir, anki, kanji, audio, illus, sent, sent_audio):
     kanji_dir = os.path.join(genki_dir, 'assets', 'appimages', 'midashi')
+    sent_dir = os.path.join(genki_dir, 'assets', 'appimages', 'reibun')
     audio_dir = os.path.join(genki_dir, 'assets', 'appsounds', 'midashi')
+    sent_audio_dir = os.path.join(genki_dir, 'assets', 'appsounds', 'example')
     illus_dir = None
     if illus:
         illus_dir = os.path.join(genki_dir, 'assets', 'appimages', 'illust')
@@ -80,9 +91,15 @@ def copy_media(genki_dir, anki, kanji, audio, illus):
     with open(os.path.join(audio_dir, audio), 'rb') as f:
         anki.add_media(f)
 
+    with open(os.path.join(sent_audio_dir, sent_audio), 'rb') as f:
+        anki.add_media(f)
+
     if illus_dir:
         with open(os.path.join(illus_dir, illus), 'rb') as f:
             anki.add_media(f)
+
+    with open(os.path.join(sent_dir, sent), 'rb') as f:
+        anki.add_media(f)
 
 
 if __name__ == '__main__':
