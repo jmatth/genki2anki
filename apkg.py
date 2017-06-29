@@ -13,7 +13,7 @@ import ankiutils
 # TODO: Don't hardcode this
 MODEL_ID = 1342696646293
 DECK_ID = 1488984677983
-NUM_CARDS = 3
+NUM_CARDS = 5
 
 
 class Apkg(object):
