@@ -13,6 +13,7 @@ import ankiutils
 # TODO: Don't hardcode this
 MODEL_ID = 1342696646293
 DECK_ID = 1488984677983
+NUM_CARDS = 3
 
 
 class Apkg(object):
@@ -66,45 +67,22 @@ class Apkg(object):
         )
 
         cards_tsid = ankiutils.timestampID(self._connection, 'cards')
-        self._connection.execute(
-            """\
-                INSERT INTO "cards"
-                VALUES(:tsid,:nid,:did,0,:mod,0,0,0,:usn,0,0,0,0,0,0,0,0,'');
-            """,
-            {
-                'tsid': cards_tsid,
-                'nid': note_tsid,
-                'did': DECK_ID,
-                'mod': MODEL_ID,
-                'usn': self._get_next_order(),
-            }
-        )
-        self._connection.execute(
-            """\
-                INSERT INTO "cards"
-                VALUES(:tsid,:nid,:did,1,:mod,0,0,0,:usn,0,0,0,0,0,0,0,0,'');
-            """,
-            {
-                'tsid': cards_tsid + 1,
-                'nid': note_tsid,
-                'did': DECK_ID,
-                'mod': MODEL_ID,
-                'usn': self._get_next_order(),
-            }
-        )
-        self._connection.execute(
-            """\
-                INSERT INTO "cards"
-                VALUES(:tsid,:nid,:did,2,:mod,0,0,0,:usn,0,0,0,0,0,0,0,0,'');
-            """,
-            {
-                'tsid': cards_tsid + 2,
-                'nid': note_tsid,
-                'did': DECK_ID,
-                'mod': MODEL_ID,
-                'usn': self._get_next_order(),
-            }
-        )
+        for ordinal in range(NUM_CARDS):
+            self._connection.execute(
+                """\
+                    INSERT INTO "cards"
+                    VALUES(:tsid,:nid,:did,:ord,:mod,0,0,0,:due,0,0,0,0,0,0,0,0,'');
+                """,
+                {
+                    'tsid': cards_tsid + ordinal,
+                    'nid': note_tsid,
+                    'did': DECK_ID,
+                    'ord': ordinal,
+                    'mod': MODEL_ID,
+                    'due': self._get_next_order(),
+                }
+            )
+
         self._connection.commit()
 
     def add_media(self, src, name=None):
