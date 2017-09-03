@@ -1,13 +1,16 @@
 ```
-usage: genki2anki.py [-h] genki_dir output_file
+usage: genki2anki.py [-h] [--filter-kanji {y,n}] genki_dir output_file
 
 positional arguments:
-  genki_dir    Path to the extracted GENKI Vocab apk contents.
-  output_file  Desired path to output apkg file. THIS WILL BE OVERWRITTEN IF
-               IT EXISTS!
+  genki_dir             Path to the extracted GENKI Vocab apk contents.
+  output_file           Desired path to output apkg file. THIS WILL BE
+                        OVERWRITTEN IF IT EXISTS!
 
 optional arguments:
-  -h, --help   show this help message and exit
+  -h, --help            show this help message and exit
+  --filter-kanji {y,n}  Attempt to filter out kanji images that contain only
+                        kana. Default value is y. See README for more
+                        information.
 ```
 
 
@@ -48,25 +51,56 @@ screen and the file you specified will be created. You can then import it into
 Anki.
 
 
-## Customizing The Deck
+## Options
+`--filter-kanji`: Kanji in the Genki app are stored as plain png images that
+include both the Kanji and furigana. Unfortunately some words don't have kanji
+associated with them so the included image just contains kana, resulting in anki
+cards that are duplicates (we already have cards for the kana alone). If this
+flag is turned on (it is on by default) then the script will try to check for
+the presence of furigana in each kanji image, and exclude any where it is not
+found. This effectively filters out the 375 images that contain kana instead of
+kanji, but does slow down deck generation a bit and could break if a significant
+app update changes how the images are laid out. I recommend leaving it turned on
+unless your generated deck turns out to be missing a bunch of kanji cards (also
+if that happens, please file a bug so I can fix it).
+
+
+## FAQ
+## What's this empty "UKanji" field in the notes?
+This is in case you want to add unicode versions of the Kanji to replace the
+images from the Genki app. The cards are written to show the UKanji field if it
+is not empty, the Kanji field otherwise, and not generate the card at all if
+both are empty. Also, if you do fill in the UKanji field you can toggle between
+the two fields by tapping or clicking on the kanji on the cards. Personally I've
+used this feature to change some of the kanji (友だち to 友達), add some extra
+cards from Tae Kim's grammar guide in a way that doesn't stand out from the rest
+of the cards, and just to have more recognizable unicode characters instead of
+stylized calligraphy while reviewing. Feel free to ignore or even delete this
+field if it doesn't sound useful to you.
+
+### I don't like the card layout, how can I change it?
 While it's possible to hack the python script to change how the deck is
 generated, it's probably not worth the effort right now since a lot of it exists
 in json embedded in sql queries and a handful of unique ids are hardcoded. A far
 easier option is to just generate the deck and then customize the notes and
-cards inside of Anki. Maybe one day I'll break out the templates into their own
-HTML files for easier customization, but probably not.
+cards inside of Anki. You can find extensive documentation on how to do so on
+Anki's own website
+[here](https://apps.ankiweb.net/docs/manual.html#cards-and-templates).  Maybe
+one day I'll break out the templates into their own HTML files for easier
+customization, but probably not.
+
+### I don't want sentences (or kanji or whatever) as separate cards.
+If you don't like having certain cards then you should delete the card type
+after importing the cards into Anki. For reasons discussed in the previous
+question, it is not practical to support generating decks with some cards
+included or excluded, so instead the script tries to include every possible card
+with every piece of information from the Genki app so you can customize it
+however you'd like. For example, I removed the sentence card types but moved the
+example sentences to the backs of other cards so I could still use them for
+practice.
 
 
 ## Known Issues
-* Some cards will be created where the "kanji" image is just a duplicate of the
-  kana reading. This is a result of how Genki structured the data within their
-  app and can't be helped. The simplest solution is to just edit such cards as
-  they come up during your study sessions and delete the image from the kanji
-  field. Then once you're done click `Tools -> Empty Cards...` to have Anki
-  remove the now empty kanji cards. Since most cards don't have kanji until
-  lesson 3, it might also be preferable to go through notes from the first two
-  lessons and modify each card to remove the kanji before you start using the
-  deck.
 * Some of the readings have hints in parenthesis that give away the English
   meaning (for example "あの (um . . .)"). Your best option is just do edit the
   cards as they come up during study sessions.

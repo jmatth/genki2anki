@@ -12,7 +12,7 @@ import ankiutils
 
 # TODO: Don't hardcode this
 MODEL_ID = 1342696646293
-DECK_ID = 1488984677983
+DECK_ID = 1500504143100
 NUM_CARDS = 5
 
 
@@ -41,7 +41,7 @@ class Apkg(object):
         self._order += 1
         return val
 
-    def add_note(self, flds_list, tags=""):
+    def add_note(self, flds_list, tags, models):
         flds = ''.join(flds_list)
         if flds in self._dedupe:
             print('DUPE: %s' % flds_list[0])
@@ -67,7 +67,7 @@ class Apkg(object):
         )
 
         cards_tsid = ankiutils.timestampID(self._connection, 'cards')
-        for ordinal in range(NUM_CARDS):
+        for ordinal in models:
             self._connection.execute(
                 """\
                     INSERT INTO "cards"
