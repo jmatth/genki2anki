@@ -160,13 +160,20 @@ def ids2str(ids):
     """Given a list of integers, return a string '(int1,int2,...)'."""
     return "(%s)" % ",".join(str(i) for i in ids)
 
-def timestampID(db, table):
+def timestampID(db, table, min_keys=1):
     "Return a non-conflicting timestamp for table."
     # be careful not to create multiple objects without flushing them, or they
     # may share an ID.
+    safety = 10
     t = intTime(1000)
-    while db.execute("select id from %s where id = ?" % table, (t,)).fetchone() is not None:
+    ids = [ t + i for i in range(min_keys) ]
+    while db.execute("select id from %s where id in (%s)" % (table,
+        ','.join('?'*min_keys)), ids).fetchone() is not None:
         t += 1
+        ids = [ t + i for i in range(min_keys) ]
+        safety -= 1
+        if safety <= 0:
+            raise ValueError('Could not find non-conflicting timestamp id')
     return t
 
 def maxID(db):

@@ -66,7 +66,7 @@ class Apkg(object):
             }
         )
 
-        cards_tsid = ankiutils.timestampID(self._connection, 'cards')
+        cards_tsid = ankiutils.timestampID(self._connection, 'cards', 5)
         for ordinal in models:
             self._connection.execute(
                 """\
